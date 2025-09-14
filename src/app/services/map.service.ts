@@ -1,80 +1,119 @@
+import { Injectable, inject, effect, signal } from '@angular/core';
 import chroma from 'chroma-js';
 import L from 'leaflet';
 import * as h3 from 'h3-js';
-import type { MapViewState, H3Data } from '../types/index.js';
-import { mapViewState, h3Data, currentResolution, filters, appConfig } from '../stores/index.js';
+import type { MapViewState, H3Data } from '../types';
+import { StateService } from './state.service';
 
-export class MapManager {
-  private mapContainer: HTMLElement;
+// Fix for Leaflet default icons
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+});
+
+@Injectable({
+  providedIn: 'root'
+})
+export class MapService {
+  // Injected services
+  private readonly stateService = inject(StateService);
+
+  // Private properties
   private map: L.Map | null = null;
   private hexagonLayer: L.LayerGroup | null = null;
   private mapUpdateTimer: number | null = null;
   private initialDataLoaded = false;
-  private unsubscribeFunctions: (() => void)[] = [];
 
+  // Private readonly properties
   private readonly MAP_UPDATE_DEBOUNCE = 500;
 
-  constructor(mapContainer: HTMLElement) {
-    this.mapContainer = mapContainer;
-    this.initMap();
-    this.setupSubscriptions();
+  // Signals for internal state
+  private readonly _isInitialized = signal(false);
+
+  // Readonly signals
+  readonly isInitialized = this._isInitialized.asReadonly();
+
+  constructor() {
+    // Set up effects to react to state changes
+    this.setupEffects();
   }
 
-  private initMap(): void {
-    if (!this.mapContainer) return;
-
-    // Get initial config from store
-    const config = appConfig.get();
-    const center = config?.default_map_center || [40.7128, -74.006];
-    const zoom = config?.default_map_zoom || 10;
-
-    // Create map
-    this.map = L.map(this.mapContainer, {
-      center: center as [number, number],
-      zoom: zoom,
-      zoomControl: true,
-      attributionControl: true
-    });
-
-    // Add tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 18
-    }).addTo(this.map);
-
-    // Create hexagon layer
-    this.hexagonLayer = L.layerGroup().addTo(this.map);
-
-    // Set up event listeners
-    this.map.on('moveend', this.handleMapChange.bind(this));
-    this.map.on('zoomend', this.handleMapChange.bind(this));
-
-    // Initialize map state
-    this.updateMapState();
-
-    console.log('Map initialized:', { center, zoom });
-  }
-
-  private setupSubscriptions(): void {
-    // Subscribe to h3Data changes
-    const unsubH3Data = h3Data.subscribe((data) => {
-      this.renderHexagons(data);
-    });
-
-    // Subscribe to mapViewState forceFit changes
-    const unsubMapView = mapViewState.subscribe((state) => {
-      if (state.forceFit) {
-        this.fitToHexagons();
+  private setupEffects(): void {
+    // React to h3Data changes
+    effect(() => {
+      const data = this.stateService.h3Data();
+      if (this._isInitialized()) {
+        this.renderHexagons(data);
       }
     });
 
-    // Subscribe to filter changes
-    const unsubFilters = filters.subscribe(() => {
-      // Re-render hexagons when filters change
-      this.renderHexagons(h3Data.get());
-    });
+    // React to mapViewState forceFit changes
+    effect(() => {
+      const state = this.stateService.mapViewState();
+      if (state.forceFit && this._isInitialized()) {
+        this.fitToHexagons();
+      }
+    }, { allowSignalWrites: true });
 
-    this.unsubscribeFunctions.push(unsubH3Data, unsubMapView, unsubFilters);
+    // React to filter changes
+    effect(() => {
+      const filters = this.stateService.filters();
+      const data = this.stateService.h3Data();
+      if (this._isInitialized()) {
+        this.renderHexagons(data);
+      }
+    });
+  }
+
+  initMap(mapContainer: HTMLElement): void {
+    if (!mapContainer || this._isInitialized()) {
+      console.log('Map container not available or already initialized');
+      return;
+    }
+
+    console.log('Initializing map with container:', mapContainer);
+
+    // Get initial config from state service
+    const config = this.stateService.appConfig();
+    const center = config.default_map_center;
+    const zoom = config.default_map_zoom;
+
+    try {
+      // Create map
+      this.map = L.map(mapContainer, {
+        center: center as [number, number],
+        zoom: zoom,
+        zoomControl: true,
+        attributionControl: true
+      });
+
+      console.log('Map instance created:', this.map);
+
+      // Add tile layer
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18
+      }).addTo(this.map);
+
+      console.log('Tile layer added');
+
+      // Create hexagon layer
+      this.hexagonLayer = L.layerGroup().addTo(this.map);
+
+      // Set up event listeners
+      this.map.on('moveend', this.handleMapChange.bind(this));
+      this.map.on('zoomend', this.handleMapChange.bind(this));
+
+      // Initialize map state
+      this.updateMapState();
+      this._isInitialized.set(true);
+
+      console.log('Map initialized successfully:', { center, zoom });
+    } catch (error) {
+      console.error('Error initializing map:', error);
+    }
   }
 
   private handleMapChange(): void {
@@ -108,7 +147,7 @@ export class MapManager {
       }
     };
 
-    mapViewState.set(newState);
+    this.stateService.setMapViewState(newState);
     console.log('Map state updated:', newState);
   }
 
@@ -119,16 +158,16 @@ export class MapManager {
     this.hexagonLayer.clearLayers();
 
     const hexagons = Object.keys(data);
-    
+
     // Only fit bounds on very first data load
-    if (!this.initialDataLoaded && hexagons.length > 0 && !mapViewState.get()?.bounds) {
+    if (!this.initialDataLoaded && hexagons.length > 0 && !this.stateService.mapViewState()?.bounds) {
       this.fitToHexagons();
       this.initialDataLoaded = true;
     }
 
     // Process data for visualization
     const values: number[] = [];
-    const currentFilters = filters.get();
+    const currentFilters = this.stateService.filters();
 
     for (const [h3Index, entries] of Object.entries(data)) {
       if (entries.length > 0) {
@@ -199,7 +238,7 @@ export class MapManager {
           <strong>${currentFilters.aggregation === 'sum' ? 'Sum' : 'Average'} of ${currentFilters.kpi}:</strong> ${total.toFixed(2)}
         `);
 
-        this.hexagonLayer.addLayer(polygon);
+        this.hexagonLayer!.addLayer(polygon);
       } catch (error) {
         console.error('Error rendering hexagon:', h3Index, error);
       }
@@ -209,7 +248,7 @@ export class MapManager {
   private fitToHexagons(): void {
     if (!this.map) return;
 
-    const data = h3Data.get();
+    const data = this.stateService.h3Data();
     const hexagons = Object.keys(data);
 
     if (hexagons.length === 0) return;
@@ -237,30 +276,27 @@ export class MapManager {
     ], { padding: [50, 50] });
 
     // Reset forceFit flag
-    mapViewState.update(state => ({
-      ...state,
-      forceFit: false
-    }));
+    this.stateService.updateMapViewState({ forceFit: false });
   }
 
   // Load sample data for demonstration
-  public loadSampleData(): void {
+  loadSampleData(): void {
     // Generate some sample H3 data around New York area
     const sampleData: H3Data = {};
     const centerLat = 40.7128;
     const centerLng = -74.006;
-    const resolution = currentResolution.get();
+    const resolution = this.stateService.currentResolution();
 
     // Generate hexagons in a grid pattern around the center
     for (let latOffset = -0.1; latOffset <= 0.1; latOffset += 0.02) {
       for (let lngOffset = -0.1; lngOffset <= 0.1; lngOffset += 0.02) {
         try {
           const h3Index = h3.latLngToCell(centerLat + latOffset, centerLng + lngOffset, resolution);
-          
+
           // Generate random sample data
           const vehicleCount = Math.floor(Math.random() * 10) + 1;
           const entries = [];
-          
+
           for (let i = 0; i < vehicleCount; i++) {
             entries.push({
               vehicle_id: `vehicle_${Math.floor(Math.random() * 1000)}`,
@@ -271,7 +307,7 @@ export class MapManager {
               }
             });
           }
-          
+
           sampleData[h3Index] = entries;
         } catch (error) {
           // Skip invalid coordinates
@@ -279,25 +315,29 @@ export class MapManager {
       }
     }
 
-    h3Data.set(sampleData);
+    this.stateService.updateH3Data(sampleData);
   }
 
-  // Get map instance
-  public getMap(): L.Map | null {
+  // Fit to data method
+  fitToData(): void {
+    this.stateService.updateMapViewState({ forceFit: true });
+  }
+
+  // Get map instance (for external access if needed)
+  getMap(): L.Map | null {
     return this.map;
   }
 
   // Cleanup method
-  public destroy(): void {
+  destroy(): void {
     if (this.mapUpdateTimer) {
       clearTimeout(this.mapUpdateTimer);
     }
-    
-    // Unsubscribe from all store subscriptions
-    this.unsubscribeFunctions.forEach(unsubscribe => unsubscribe());
-    
+
     if (this.map) {
       this.map.remove();
     }
+
+    this._isInitialized.set(false);
   }
 }

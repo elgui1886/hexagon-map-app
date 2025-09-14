@@ -1,0 +1,357 @@
+<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+<!-- * * * * * * * * * * * The content below * * * * * * * * * * * -->
+<!-- * * * * * * * * * * is only a placeholder * * * * * * * * * * -->
+<!-- * * * * * * * * * * and can be replaced.  * * * * * * * * * * -->
+<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+<!-- * * * * * * * * * Delete the template below * * * * * * * * * -->
+<!-- * * * * * * * to get started with your project! * * * * * * * -->
+<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+
+<style>
+  :host {
+    --bright-blue: oklch(51.01% 0.274 263.83);
+    --electric-violet: oklch(53.18% 0.28 296.97);
+    --french-violet: oklch(47.66% 0.246 305.88);
+    --vivid-pink: oklch(69.02% 0.277 332.77);
+    --hot-red: oklch(61.42% 0.238 15.34);
+    --orange-red: oklch(63.32% 0.24 31.68);
+
+    --gray-900: oklch(19.37% 0.006 300.98);
+    --gray-700: oklch(36.98% 0.014 302.71);
+    --gray-400: oklch(70.9% 0.015 304.04);
+
+    --red-to-pink-to-purple-vertical-gradient: linear-gradient(
+      180deg,
+      var(--orange-red) 0%,
+      var(--vivid-pink) 50%,
+      var(--electric-violet) 100%
+    );
+
+    --red-to-pink-to-purple-horizontal-gradient: linear-gradient(
+      90deg,
+      var(--orange-red) 0%,
+      var(--vivid-pink) 50%,
+      var(--electric-violet) 100%
+    );
+
+    --pill-accent: var(--bright-blue);
+
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+      "Segoe UI Symbol";
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1 {
+    font-size: 3.125rem;
+    color: var(--gray-900);
+    font-weight: 500;
+    line-height: 100%;
+    letter-spacing: -0.125rem;
+    margin: 0;
+    font-family: "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI",
+      Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji",
+      "Segoe UI Emoji", "Segoe UI Symbol";
+  }
+
+  p {
+    margin: 0;
+    color: var(--gray-700);
+  }
+
+  main {
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    box-sizing: inherit;
+    position: relative;
+  }
+
+  .angular-logo {
+    max-width: 9.2rem;
+  }
+
+  .content {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    height: 100%;
+    margin-bottom: 3rem;
+  }
+
+  .content h1 {
+    margin-top: 1.75rem;
+  }
+
+  .content p {
+    margin-top: 1.5rem;
+  }
+
+  .divider {
+    width: 1px;
+    background: var(--red-to-pink-to-purple-vertical-gradient);
+    margin-inline: 0.5rem;
+  }
+
+  .pill-group {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+  }
+
+  .pill {
+    display: flex;
+    align-items: center;
+    --pill-accent: var(--bright-blue);
+    background: color-mix(in srgb, var(--pill-accent) 5%, transparent);
+    color: var(--pill-accent);
+    padding-inline: 0.75rem;
+    padding-block: 0.375rem;
+    border-radius: 2.75rem;
+    border: 0;
+    transition: background 0.3s ease;
+    font-family: var(--inter-font);
+    font-size: 0.875rem;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 1.4rem;
+    letter-spacing: -0.00875rem;
+    text-decoration: none;
+  }
+
+  .pill:hover {
+    background: color-mix(in srgb, var(--pill-accent) 15%, transparent);
+  }
+
+  .pill-group .pill:nth-child(6n + 1) {
+    --pill-accent: var(--bright-blue);
+  }
+  .pill-group .pill:nth-child(6n + 2) {
+    --pill-accent: var(--french-violet);
+  }
+  .pill-group .pill:nth-child(6n + 3),
+  .pill-group .pill:nth-child(6n + 4),
+  .pill-group .pill:nth-child(6n + 5) {
+    --pill-accent: var(--hot-red);
+  }
+
+  .pill-group svg {
+    margin-inline-start: 0.25rem;
+  }
+
+  .social-links {
+    display: flex;
+    align-items: center;
+    gap: 0.73rem;
+    margin-top: 1.5rem;
+  }
+
+  .social-links path {
+    transition: fill 0.3s ease;
+    fill: var(--gray-400);
+  }
+
+  .social-links a:hover svg path {
+    fill: var(--gray-900);
+  }
+
+  @media screen and (max-width: 650px) {
+    .content {
+      flex-direction: column;
+      width: max-content;
+    }
+
+    .divider {
+      height: 1px;
+      width: 100%;
+      background: var(--red-to-pink-to-purple-horizontal-gradient);
+      margin-block: 1.5rem;
+    }
+  }
+</style>
+
+<main class="main">
+  <div class="content">
+      <div id="app">
+        <!-- Top Header Bar -->
+        <header class="app-header">
+          <div class="header-left">
+            <h1>{{ title() }}</h1>
+          </div>
+          <div class="header-center">
+            <button (click)="onFitToData()" class="btn btn-secondary">
+              Fit To Map
+            </button>
+          </div>
+          <div class="header-right">
+            <div class="user-controls">
+              <button class="btn btn-icon">⚙️</button>
+              <button class="btn btn-icon">❓</button>
+            </div>
+          </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="app-main">
+          <!-- Left Sidebar -->
+          <aside class="left-sidebar">
+            <div class="sidebar-section">
+              <h3>View</h3>
+              <div class="control-group">
+                <label>Vehicles</label>
+                <div class="vehicle-list">
+                  <div class="vehicle-group">
+                    <input
+                      type="checkbox"
+                      id="select-all"
+                      [checked]="allVehiclesSelected()"
+                      (change)="onToggleAllVehicles()"
+                    />
+                    <label for="select-all">Select All Vehicles</label>
+                  </div>
+                  @for (vehicle of vehicles(); track vehicle.id) {
+                  <div class="vehicle-item">
+                    <input
+                      type="checkbox"
+                      [id]="vehicle.id"
+                      [checked]="vehicle.selected"
+                      (change)="onToggleVehicle(vehicle.id)"
+                    />
+                    <span
+                      class="vehicle-color"
+                      [style.background]="vehicle.color"
+                    ></span>
+                    <label [for]="vehicle.id">{{ vehicle.name }}</label>
+                  </div>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div class="sidebar-section">
+              <h3>Data Controls</h3>
+              <div class="control-group">
+                <label for="kpi-select">KPI:</label>
+                <select
+                  id="kpi-select"
+                  class="form-select"
+                  [value]="stateService.filters().kpi"
+                  (change)="onKpiChange($any($event.target).value)"
+                >
+                  @for (option of kpiOptions(); track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              </div>
+              <div class="control-group">
+                <label for="aggregation-select">Aggregation:</label>
+                <select
+                  id="aggregation-select"
+                  class="form-select"
+                  [value]="stateService.filters().aggregation"
+                  (change)="onAggregationChange($any($event.target).value)"
+                >
+                  @for (option of aggregationOptions(); track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              </div>
+              <div class="control-group">
+                <label for="resolution-select">H3 Resolution:</label>
+                <select
+                  id="resolution-select"
+                  class="form-select"
+                  [value]="stateService.currentResolution()"
+                  (change)="onResolutionChange(+$any($event.target).value)"
+                >
+                  @for (option of resolutionOptions(); track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              </div>
+              <button
+                (click)="onLoadSampleData()"
+                class="btn btn-primary full-width"
+              >
+                Load Sample Data
+              </button>
+            </div>
+          </aside>
+
+          <!-- Central Map Area -->
+          <div class="map-container">
+            <app-map></app-map>
+
+            <!-- Map controls overlay -->
+            <div class="map-controls">
+              <div class="zoom-info">
+                Zoom: <span id="current-zoom">{{ currentZoom() }}</span>
+              </div>
+              <div class="resolution-info">
+                H3 Resolution:
+                <span id="current-resolution">{{
+                  stateService.currentResolution()
+                }}</span>
+              </div>
+              <div class="hexagon-info">
+                Hexagons: <span>{{ hexagonCount() }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Sidebar -->
+          <aside class="right-sidebar">
+            <div class="sidebar-section">
+              <h3>Title widget</h3>
+              <p class="widget-description">Little explanation for the user</p>
+              <div class="radio-group">
+                <input
+                  type="radio"
+                  id="vehicle-path"
+                  name="widget-type"
+                  checked
+                />
+                <label for="vehicle-path">Vehicle Path (Vehicle history)</label>
+                <input type="radio" id="vehicle-speed" name="widget-type" />
+                <label for="vehicle-speed">Vehicle speeding</label>
+              </div>
+            </div>
+
+            <div class="sidebar-section">
+              <h3>AI Data insights</h3>
+              <p class="widget-description">Little explanation for the user</p>
+              <div class="insights-item">
+                <input type="checkbox" id="roadside-inspections" checked />
+                <label for="roadside-inspections"
+                  >Roadside inspections prevention (FMCSA)</label
+                >
+              </div>
+            </div>
+
+            <div class="sidebar-section">
+              <h3>Legenda</h3>
+              <p class="widget-description">Little explanation for the user</p>
+              <div class="legend-items">
+                @for (item of legendItems(); track item.label) {
+                <div class="legend-item">
+                  <span
+                    class="legend-color"
+                    [style.background]="item.color"
+                  ></span>
+                  <span>{{ item.label }}</span>
+                </div>
+                }
+              </div>
+            </div>
+          </aside>
+        </main>
+      </div>
+  </div>
+</main>

@@ -1,112 +1,27 @@
-# Hexagon Map App
+# HexagonMapAngular
 
-Una applicazione web TypeScript per la visualizzazione di mappe con esagoni H3 popolati con dati. L'applicazione converte la logica originale da Svelte a TypeScript vanilla con Leaflet per la gestione delle mappe.
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.21.
 
-## Caratteristiche
+## Development server
 
-- 🗺️ **Mappa interattiva** con Leaflet
-- 🔢 **Esagoni H3** per la visualizzazione di dati geospaziali
-- 🎨 **Colori dinamici** basati sui valori KPI usando chroma-js
-- 📊 **Controlli filtri** per KPI e aggregazione
-- 🎯 **Zoom automatico** ai dati caricati
-- 📱 **Design responsive** con CSS moderno
+Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
 
-## Tecnologie utilizzate
+## Code scaffolding
 
-- **TypeScript** - Linguaggio principale
-- **Vite** - Build tool e dev server
-- **Leaflet** - Libreria per mappe interattive
-- **H3-js** - Libreria per il sistema di indicizzazione esagonale H3
-- **Chroma-js** - Libreria per la manipolazione dei colori
-- **CSS Vanilla** - Styling moderno con CSS variables
+Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 
-## Struttura del progetto
+## Build
 
-```
-src/
-├── map/
-│   └── MapManager.ts          # Classe principale per gestire la mappa
-├── stores/
-│   └── index.ts              # Sistema di state management
-├── styles/
-│   └── main.css              # Stili CSS
-├── types/
-│   └── index.ts              # Definizioni TypeScript
-└── main.ts                   # Entry point dell'applicazione
-```
+Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
 
-## Installazione e avvio
+## Running unit tests
 
-1. **Installa le dipendenze:**
-   ```bash
-   npm install
-   ```
+Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
 
-2. **Avvia il server di sviluppo:**
-   ```bash
-   npm run dev
-   ```
+## Running end-to-end tests
 
-3. **Apri il browser** all'indirizzo mostrato nel terminale (solitamente http://localhost:3000)
+Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
 
-## Utilizzo
+## Further help
 
-1. **Carica dati di esempio** cliccando il pulsante "Load Sample Data"
-2. **Cambia KPI** dal menu a tendina (Speed, Fuel, Distance)
-3. **Modifica aggregazione** (Sum o Average)
-4. **Regola risoluzione H3** (6-10)
-5. **Adatta vista** ai dati con "Fit to Data"
-
-## Build per produzione
-
-```bash
-npm run build
-```
-
-I file ottimizzati saranno generati nella cartella `dist/`.
-
-## Comandi disponibili
-
-- `npm run dev` - Avvia il server di sviluppo
-- `npm run build` - Crea build di produzione
-- `npm run preview` - Anteprima della build di produzione
-- `npm run serve` - Serve la build sulla porta 3000
-
-## Migrazione da Svelte
-
-L'applicazione originale in Svelte è stata convertita seguendo questi principi:
-
-1. **State Management**: Gli store Svelte sono stati sostituiti con un sistema basato su EventTarget
-2. **Reattività**: I reactive statements (`$:`) sono stati convertiti in subscriptions agli eventi
-3. **Lifecycle**: `onMount/onDestroy` sono stati sostituiti con metodi di classe
-4. **Binding**: I binding Svelte sono stati sostituiti con event listeners manuali
-
-## Personalizzazione
-
-### Aggiungere nuovi KPI
-
-Modifica l'interfaccia `H3DataEntry` in `src/types/index.ts` e aggiungi le opzioni nel select HTML.
-
-### Cambiare la scala colori
-
-Modifica i colori nella funzione `renderHexagons()` della classe `MapManager`.
-
-### Modificare lo stile
-
-Aggiorna le variabili CSS in `src/styles/main.css` per personalizzare l'aspetto.
-
-## API del MapManager
-
-La classe `MapManager` espone i seguenti metodi pubblici:
-
-- `loadSampleData()` - Carica dati di esempio
-- `getMap()` - Restituisce l'istanza Leaflet
-- `destroy()` - Pulisce risorse e listener
-
-## Contribuire
-
-1. Fork del repository
-2. Crea un branch per la feature
-3. Commit delle modifiche
-4. Push del branch
-5. Apri una Pull Request
+To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.

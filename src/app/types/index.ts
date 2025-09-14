@@ -40,11 +40,3 @@ export interface AppState {
   filters: Filters;
   appConfig: AppConfig;
 }
-
-// Event types for state updates
-export type StateEventType = 'map-view-updated' | 'h3-data-updated' | 'filters-updated' | 'resolution-updated';
-
-export interface StateEvent {
-  type: StateEventType;
-  data: any;
-}

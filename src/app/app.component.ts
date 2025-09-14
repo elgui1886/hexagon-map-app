@@ -1,0 +1,106 @@
+import { Component, inject, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { StateService } from './services/state.service';
+import { MapService } from './services/map.service';
+import { MapComponent } from './components/map.component';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [CommonModule, MapComponent],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss'
+})
+export class AppComponent {
+  // Injected services
+  readonly stateService = inject(StateService);
+  readonly mapService = inject(MapService);
+
+  // Component properties
+  readonly title = signal('Hexagon Map');
+
+  // KPI options for dropdown
+  readonly kpiOptions = signal([
+    { value: 'speed', label: 'Speed' },
+    { value: 'fuel', label: 'Fuel' },
+    { value: 'distance', label: 'Distance' }
+  ]);
+
+  // Aggregation options for dropdown
+  readonly aggregationOptions = signal([
+    { value: 'sum', label: 'Sum' },
+    { value: 'average', label: 'Average' }
+  ]);
+
+  // Resolution options for dropdown
+  readonly resolutionOptions = signal([
+    { value: 6, label: '6' },
+    { value: 7, label: '7' },
+    { value: 8, label: '8' },
+    { value: 9, label: '9' },
+    { value: 10, label: '10' }
+  ]);
+
+  // Sample vehicles for left sidebar
+  readonly vehicles = signal([
+    { id: 'vehicle1', name: 'Sample Vehicle 1', color: '#ff4444', selected: true },
+    { id: 'vehicle2', name: 'Sample Vehicle 2', color: '#44ff44', selected: true },
+    { id: 'vehicle3', name: 'Sample Vehicle 3', color: '#4444ff', selected: true }
+  ]);
+
+  // Legend items for right sidebar
+  readonly legendItems = signal([
+    { color: '#ff4444', label: 'Speeding' },
+    { color: '#ffaa00', label: 'Idling' },
+    { color: '#44aa44', label: 'Driving' }
+  ]);
+
+  // Computed properties
+  readonly currentZoom = computed(() =>
+    this.stateService.mapViewState().zoom?.toFixed(0) || '10'
+  );
+
+  readonly hexagonCount = computed(() =>
+    this.stateService.hexagonCount()
+  );
+
+  readonly allVehiclesSelected = computed(() =>
+    this.vehicles().every(v => v.selected)
+  );
+
+  // Event handlers
+  onKpiChange(kpi: string): void {
+    this.stateService.updateFilters({ kpi });
+  }
+
+  onAggregationChange(aggregation: 'sum' | 'average'): void {
+    this.stateService.updateFilters({ aggregation });
+  }
+
+  onResolutionChange(resolution: number): void {
+    this.stateService.updateCurrentResolution(resolution);
+  }
+
+  onLoadSampleData(): void {
+    this.mapService.loadSampleData();
+  }
+
+  onFitToData(): void {
+    this.mapService.fitToData();
+  }
+
+  onToggleAllVehicles(): void {
+    const allSelected = this.allVehiclesSelected();
+    this.vehicles.update(vehicles =>
+      vehicles.map(v => ({ ...v, selected: !allSelected }))
+    );
+  }
+
+  onToggleVehicle(vehicleId: string): void {
+    this.vehicles.update(vehicles =>
+      vehicles.map(v =>
+        v.id === vehicleId ? { ...v, selected: !v.selected } : v
+      )
+    );
+  }
+}
