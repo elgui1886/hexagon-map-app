@@ -30,10 +30,9 @@
   width: 100%;
   display: grid;
   grid-template-areas:
-    "header header"
-    "left-sidebar main";
+    "header"
+    "main";
   grid-template-rows: var(--header-height) 1fr;
-  grid-template-columns: var(--sidebar-width) 1fr;
   gap: 0;
   padding-left: 5px;
   padding-right: 5px;
@@ -87,11 +86,19 @@
 
 /* Sidebars */
 .left-sidebar {
-  grid-area: left-sidebar;
+  position: absolute;
+  width: 300px;
+  height: 80vh;
+  top: 150px;
+  left: 15px;
   background: var(--sidebar-color);
   border-right: 1px solid var(--border-color);
   overflow-y: auto;
-  padding: var(--spacing-md);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 500;
 }
 
 .right-sidebar {

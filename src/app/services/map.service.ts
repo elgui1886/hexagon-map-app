@@ -85,11 +85,16 @@ export class MapService {
       this.map = L.map(mapContainer, {
         center: center as [number, number],
         zoom: zoom,
-        zoomControl: true,
+        zoomControl: false, // Disable default zoom control
         attributionControl: true
       });
 
       console.log('Map instance created:', this.map);
+
+      // Add custom zoom control in bottom-right position
+      L.control.zoom({
+        position: 'bottomright'
+      }).addTo(this.map);
 
       // Add tile layer
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

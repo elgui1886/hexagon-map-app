@@ -2,12 +2,13 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StateService } from './services/state.service';
 import { MapService } from './services/map.service';
-import { MapComponent } from './components/map.component';
+import { MapComponent } from './components/map/map.component';
+import { VehicleFilterComponent } from './components/vehicles/vehicle-filter.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, MapComponent],
+  imports: [CommonModule, MapComponent, VehicleFilterComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -90,17 +91,14 @@ export class AppComponent {
   }
 
   onToggleAllVehicles(): void {
-    const allSelected = this.allVehiclesSelected();
-    this.vehicles.update(vehicles =>
-      vehicles.map(v => ({ ...v, selected: !allSelected }))
-    );
+    console.log('All vehicles toggled from vehicle filter component');
   }
 
   onToggleVehicle(vehicleId: string): void {
-    this.vehicles.update(vehicles =>
-      vehicles.map(v =>
-        v.id === vehicleId ? { ...v, selected: !v.selected } : v
-      )
-    );
+    console.log('Vehicle toggled:', vehicleId);
+  }
+
+  onDeselectAllVehicles(): void {
+    console.log('All vehicles deselected from vehicle filter component');
   }
 }

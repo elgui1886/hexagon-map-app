@@ -9,39 +9,13 @@
         <!-- Main Content Area -->
         <main class="app-main">
           <!-- Left Sidebar -->
-          <aside class="left-sidebar">
-            <div class="sidebar-section">
-              <h3>View</h3>
-              <div class="control-group">
-                <label>Vehicles</label>
-                <div class="vehicle-list">
-                  <div class="vehicle-group">
-                    <input
-                      type="checkbox"
-                      id="select-all"
-                      [checked]="allVehiclesSelected()"
-                      (change)="onToggleAllVehicles()"
-                    />
-                    <label for="select-all">Select All Vehicles</label>
-                  </div>
-                  @for (vehicle of vehicles(); track vehicle.id) {
-                  <div class="vehicle-item">
-                    <input
-                      type="checkbox"
-                      [id]="vehicle.id"
-                      [checked]="vehicle.selected"
-                      (change)="onToggleVehicle(vehicle.id)"
-                    />
-                    <span
-                      class="vehicle-color"
-                      [style.background]="vehicle.color"
-                    ></span>
-                    <label [for]="vehicle.id">{{ vehicle.name }}</label>
-                  </div>
-                  }
-                </div>
-              </div>
-            </div>
+          <div class="left-sidebar">
+            <!-- Vehicle Filter Component -->
+            <app-vehicle-filter
+              (vehicleToggled)="onToggleVehicle($event)"
+              (allVehiclesToggled)="onToggleAllVehicles()"
+              (deselectAllClicked)="onDeselectAllVehicles()">
+            </app-vehicle-filter>
 
             <div class="sidebar-section">
               <h3>Data Controls</h3>
@@ -91,7 +65,7 @@
                 Load Sample Data
               </button>
             </div>
-          </aside>
+          </div>
 
           <!-- Central Map Area -->
           <div class="map-container">

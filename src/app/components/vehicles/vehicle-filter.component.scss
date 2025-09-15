@@ -1,0 +1,251 @@
+.vehicle-filter {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Tab section styling */
+.tab-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f8f8;
+}
+
+.tab-container {
+  display: flex;
+  flex: 1;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  background: #f0f0f0;
+  border-right: 1px solid #e0e0e0;
+  color: #666;
+  flex: 1;
+  justify-content: center;
+  gap: 4px;
+
+  &.active {
+    background: white;
+    color: #333;
+    border-bottom: 1px solid white;
+    margin-bottom: -1px;
+  }
+
+  &:hover:not(.active) {
+    background: #e8e8e8;
+  }
+}
+
+.tab-icon {
+  font-size: 11px;
+}
+
+.tab-label {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.minimize-btn {
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  color: #666;
+  font-size: 14px;
+
+  &:hover {
+    background: #e8e8e8;
+  }
+}
+
+/* Vehicles section */
+.vehicles-section {
+  background: white;
+}
+
+.vehicles-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #f8f8f8;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.vehicles-label {
+  font-weight: 600;
+  color: #333;
+  font-size: 11px;
+}
+
+.dropdown-btn {
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  color: #666;
+  font-size: 10px;
+
+  &:hover {
+    color: #333;
+  }
+}
+
+/* Vehicle list container */
+.vehicle-list-container {
+  max-height: 300px;
+  overflow-y: auto;
+  background: white;
+}
+
+.vehicle-item {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+  cursor: pointer;
+  min-height: 24px;
+
+  &:hover {
+    background: #f5f5f5;
+  }
+}
+
+/* Different indentation levels */
+.select-all-item {
+  padding-left: 12px;
+  padding-right: 12px;
+  background: #f9f9f9;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.vehicle-list-item {
+  padding-left: 24px; /* More indentation for individual vehicles */
+  padding-right: 12px;
+}
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  margin-right: 6px;
+  position: relative;
+  width: 14px;
+  height: 14px;
+}
+
+.vehicle-checkbox {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.checkbox-icon {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 14px;
+  height: 14px;
+  border: 1px solid #ccc;
+  background: white;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  pointer-events: none;
+  transition: all 0.15s ease;
+}
+
+/* Checkbox checked state */
+.vehicle-checkbox:checked + .checkbox-icon {
+  background: #d32f2f;
+  border-color: #d32f2f;
+  color: white;
+
+  &::after {
+    content: '✓';
+    font-size: 9px;
+    line-height: 1;
+    font-weight: bold;
+  }
+}
+
+/* Different colors for different vehicles when checked */
+.vehicle-list-item:nth-child(2) .vehicle-checkbox:checked + .checkbox-icon { background: #d32f2f; border-color: #d32f2f; }
+.vehicle-list-item:nth-child(3) .vehicle-checkbox:checked + .checkbox-icon { background: #e74c3c; border-color: #e74c3c; }
+.vehicle-list-item:nth-child(4) .vehicle-checkbox:checked + .checkbox-icon { background: #f39c12; border-color: #f39c12; }
+.vehicle-list-item:nth-child(5) .vehicle-checkbox:checked + .checkbox-icon { background: #2ecc71; border-color: #2ecc71; }
+.vehicle-list-item:nth-child(6) .vehicle-checkbox:checked + .checkbox-icon { background: #3498db; border-color: #3498db; }
+.vehicle-list-item:nth-child(7) .vehicle-checkbox:checked + .checkbox-icon { background: #9b59b6; border-color: #9b59b6; }
+.vehicle-list-item:nth-child(8) .vehicle-checkbox:checked + .checkbox-icon { background: #1abc9c; border-color: #1abc9c; }
+.vehicle-list-item:nth-child(9) .vehicle-checkbox:checked + .checkbox-icon { background: #34495e; border-color: #34495e; }
+.vehicle-list-item:nth-child(10) .vehicle-checkbox:checked + .checkbox-icon { background: #8e44ad; border-color: #8e44ad; }
+.vehicle-list-item:nth-child(11) .vehicle-checkbox:checked + .checkbox-icon { background: #27ae60; border-color: #27ae60; }
+
+.vehicle-label {
+  font-size: 11px;
+  color: #333;
+  cursor: pointer;
+  user-select: none;
+  line-height: 1.2;
+  margin: 0;
+  flex: 1;
+}
+
+.select-all-label {
+  font-weight: 500;
+}
+
+/* Deselect All button */
+.deselect-all-container {
+  padding: 8px 12px;
+  border-top: 1px solid #e0e0e0;
+  background: #f8f8f8;
+  text-align: right;
+}
+
+.deselect-all-btn {
+  background: none;
+  border: none;
+  color: #007bff;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &:hover {
+    color: #0056b3;
+    text-decoration: underline;
+  }
+}/* Scrollbar styling */
+.vehicle-list-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.vehicle-list-container::-webkit-scrollbar-track {
+  background: #f8f8f8;
+}
+
+.vehicle-list-container::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 2px;
+}
+
+.vehicle-list-container::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}

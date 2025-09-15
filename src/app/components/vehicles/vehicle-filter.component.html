@@ -1,0 +1,77 @@
+<div class="vehicle-filter">
+  <!-- Tab Section -->
+  <div class="tab-section">
+    <div class="tab-container">
+      <div class="tab active">
+        <span class="tab-icon">🚗</span>
+        <span class="tab-label">View</span>
+      </div>
+      <div class="tab">
+        <span class="tab-icon">�</span>
+        <span class="tab-label">Reports</span>
+      </div>
+    </div>
+    <button class="minimize-btn" type="button">
+      <span class="minimize-icon">—</span>
+    </button>
+  </div>
+
+  <!-- Vehicles section -->
+  <div class="vehicles-section">
+    <div class="vehicles-header">
+      <span class="vehicles-label">Vehicles</span>
+      <button class="dropdown-btn" type="button">
+        <span class="dropdown-icon">▼</span>
+      </button>
+    </div>
+
+    <!-- Vehicle list container -->
+    <div class="vehicle-list-container">
+      <!-- Select All option - less indented -->
+      <div class="vehicle-item select-all-item">
+        <div class="checkbox-container">
+          <input
+            type="checkbox"
+            id="select-all-vehicles"
+            [checked]="allVehiclesSelected()"
+            (change)="onToggleAllVehicles()"
+            class="vehicle-checkbox"
+          />
+          <span class="checkbox-icon"></span>
+        </div>
+        <label for="select-all-vehicles" class="vehicle-label select-all-label">
+          Select All Vehicles
+        </label>
+      </div>
+
+      <!-- Individual vehicles - more indented -->
+      @for (vehicle of vehicles(); track vehicle.id) {
+        <div class="vehicle-item vehicle-list-item">
+          <div class="checkbox-container">
+            <input
+              type="checkbox"
+              [id]="vehicle.id"
+              [checked]="vehicle.selected"
+              (change)="onToggleVehicle(vehicle.id)"
+              class="vehicle-checkbox"
+            />
+            <span class="checkbox-icon"></span>
+          </div>
+          <label [for]="vehicle.id" class="vehicle-label">
+            {{ vehicle.name }}
+          </label>
+        </div>
+      }
+
+      <!-- Deselect All button -->
+      <div class="deselect-all-container">
+        <button
+          type="button"
+          class="deselect-all-btn"
+          (click)="onDeselectAll()">
+          DESELECT ALL
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
