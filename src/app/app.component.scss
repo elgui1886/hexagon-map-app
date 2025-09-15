@@ -21,7 +21,7 @@
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
   --sidebar-width: 280px;
-  --header-height: 60px;
+  --header-height: 120px;
 }
 
 /* App layout - Grid container */
@@ -30,11 +30,13 @@
   width: 100%;
   display: grid;
   grid-template-areas:
-    "header header header"
-    "left-sidebar main right-sidebar";
+    "header header"
+    "left-sidebar main";
   grid-template-rows: var(--header-height) 1fr;
-  grid-template-columns: var(--sidebar-width) 1fr var(--sidebar-width);
+  grid-template-columns: var(--sidebar-width) 1fr;
   gap: 0;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
 /* Header */
@@ -44,10 +46,14 @@
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   padding: 0 var(--spacing-md);
   box-shadow: var(--shadow-sm);
   z-index: 1000;
+}
+
+.verizon-header-image {
+  width: 100%;
 }
 
 .header-left h1 {
@@ -333,50 +339,4 @@ app-map {
 
 .hexagon-info {
   margin-bottom: 0;
-}
-
-/* Responsive design */
-@media (max-width: 1200px) {
-  :host {
-    --sidebar-width: 240px;
-  }
-}
-
-@media (max-width: 1024px) {
-  #app {
-    grid-template-areas:
-      "header"
-      "left-sidebar"
-      "main"
-      "right-sidebar";
-    grid-template-columns: 1fr;
-    grid-template-rows: var(--header-height) auto 1fr auto;
-  }
-
-  .left-sidebar,
-  .right-sidebar {
-    max-height: 250px;
-    overflow-y: auto;
-  }
-
-  .map-container {
-    border-left: none;
-    border-right: none;
-    border-top: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
-  }
-}
-
-@media (max-width: 768px) {
-  .header-center {
-    display: none;
-  }
-
-  .sidebar-section h3 {
-    font-size: 0.8rem;
-  }
-
-  .widget-description {
-    font-size: 0.7rem;
-  }
 }
