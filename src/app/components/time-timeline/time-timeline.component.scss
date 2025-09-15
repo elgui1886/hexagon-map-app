@@ -1,0 +1,55 @@
+.time-timeline {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.timeline-container {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 8px;
+  border-radius: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  gap: 4px;
+}
+
+.timeline-option {
+  background: transparent;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.2s ease;
+  min-width: 80px;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #333;
+  }
+
+  &.active {
+    background: #007bff;
+    color: white;
+    box-shadow: 0 1px 4px rgba(0, 123, 255, 0.3);
+  }
+
+  &.now {
+    font-weight: 600;
+
+    &:not(.active) {
+      color: #333;
+      background: rgba(0, 0, 0, 0.08);
+    }
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}

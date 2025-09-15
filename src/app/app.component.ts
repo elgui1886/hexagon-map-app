@@ -5,11 +5,14 @@ import { MapService } from './services/map.service';
 import { MapComponent } from './components/map/map.component';
 import { VehicleFilterComponent } from './components/vehicles/vehicle-filter.component';
 import { MapToolbarComponent } from './components/map-toolbar/map-toolbar.component';
+import { TimeTimelineComponent } from './components/time-timeline/time-timeline.component';
+import { TitleWidgetComponent } from './components/title-widget/title-widget.component';
+import { LegendWidgetComponent } from './components/legend-widget/legend-widget.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, MapComponent, VehicleFilterComponent, MapToolbarComponent],
+  imports: [CommonModule, MapComponent, VehicleFilterComponent, MapToolbarComponent, TimeTimelineComponent, TitleWidgetComponent, LegendWidgetComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -128,5 +131,17 @@ export class AppComponent {
       default:
         console.log('Unknown action:', action);
     }
+  }
+
+  onTimeSelected(hours: number): void {
+    console.log('Time selected:', hours, 'hours from now');
+    // Here you can update the application state based on selected time
+    // For example, filter data or update the map display
+  }
+
+  onWidgetOptionToggled(optionId: string): void {
+    console.log('Widget option toggled:', optionId);
+    // Handle widget option changes
+    // For example, toggle map layers or update display settings
   }
 }

@@ -12,10 +12,11 @@
       </div>
     </div>
     <button class="minimize-btn" type="button">
-      <span class="minimize-icon">—</span>
+      <span class="minimize-icon" (click)="toggleVisibility()">—</span>
     </button>
   </div>
 
+  @if(showVehicles()) {
   <!-- Vehicles section -->
   <div class="vehicles-section">
     <div class="vehicles-header">
@@ -46,21 +47,21 @@
 
       <!-- Individual vehicles - more indented -->
       @for (vehicle of vehicles(); track vehicle.id) {
-        <div class="vehicle-item vehicle-list-item">
-          <div class="checkbox-container">
-            <input
-              type="checkbox"
-              [id]="vehicle.id"
-              [checked]="vehicle.selected"
-              (change)="onToggleVehicle(vehicle.id)"
-              class="vehicle-checkbox"
-            />
-            <span class="checkbox-icon"></span>
-          </div>
-          <label [for]="vehicle.id" class="vehicle-label">
-            {{ vehicle.name }}
-          </label>
+      <div class="vehicle-item vehicle-list-item">
+        <div class="checkbox-container">
+          <input
+            type="checkbox"
+            [id]="vehicle.id"
+            [checked]="vehicle.selected"
+            (change)="onToggleVehicle(vehicle.id)"
+            class="vehicle-checkbox"
+          />
+          <span class="checkbox-icon"></span>
         </div>
+        <label [for]="vehicle.id" class="vehicle-label">
+          {{ vehicle.name }}
+        </label>
+      </div>
       }
 
       <!-- Deselect All button -->
@@ -68,10 +69,12 @@
         <button
           type="button"
           class="deselect-all-btn"
-          (click)="onDeselectAll()">
+          (click)="onDeselectAll()"
+        >
           DESELECT ALL
         </button>
       </div>
     </div>
   </div>
+  }
 </div>

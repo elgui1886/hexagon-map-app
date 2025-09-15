@@ -16,6 +16,7 @@ export interface Vehicle {
   styleUrls: ['./vehicle-filter.component.scss']
 })
 export class VehicleFilterComponent {
+  showVehicles = signal(true);
   // Outputs
   readonly vehicleToggled = output<string>();
   readonly allVehiclesToggled = output<boolean>();
@@ -55,7 +56,6 @@ export class VehicleFilterComponent {
     );
     this.vehicleToggled.emit(vehicleId);
   }
-
   onToggleAllVehicles() {
     const newSelectionState = !this.allVehiclesSelected();
     this.vehicles.update(vehicles =>
@@ -63,11 +63,13 @@ export class VehicleFilterComponent {
     );
     this.allVehiclesToggled.emit(newSelectionState);
   }
-
   onDeselectAll() {
     this.vehicles.update(vehicles =>
       vehicles.map(vehicle => ({ ...vehicle, selected: false }))
     );
     this.deselectAllClicked.emit();
+  }
+  toggleVisibility() {
+    this.showVehicles.set(!this.showVehicles());
   }
 }

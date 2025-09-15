@@ -76,6 +76,21 @@
               <app-map-toolbar (toolbarAction)="onMapToolbarAction($event)"></app-map-toolbar>
             </div>
 
+            <!-- Time Timeline - positioned in center-bottom -->
+            <div class="time-timeline-container">
+              <app-time-timeline (timeSelected)="onTimeSelected($event)"></app-time-timeline>
+            </div>
+
+            <!-- Title Widget - positioned in right side -->
+            <div class="title-widget-container">
+              <app-title-widget (optionToggled)="onWidgetOptionToggled($event)"></app-title-widget>
+            </div>
+
+            <!-- Legend Widget - positioned below title widget -->
+            <div class="legend-widget-container">
+              <app-legend-widget></app-legend-widget>
+            </div>
+
             <!-- Map controls overlay -->
             <div class="map-controls">
               <div class="zoom-info">

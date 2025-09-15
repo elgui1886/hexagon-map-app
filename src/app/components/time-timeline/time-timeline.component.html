@@ -1,0 +1,14 @@
+<div class="time-timeline">
+  <div class="timeline-container">
+    @for (option of timelineOptions; track option.id) {
+      <button
+        type="button"
+        class="timeline-option"
+        [class.active]="isSelected(option)"
+        [class.now]="option.value === 0"
+        (click)="onTimeSelect(option)">
+        {{ option.label }}
+      </button>
+    }
+  </div>
+</div>

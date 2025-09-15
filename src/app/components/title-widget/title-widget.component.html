@@ -1,0 +1,45 @@
+<div class="title-widget">
+  <div class="widget-header">
+    <h3 class="widget-title">{{ title }}</h3>
+    <p class="widget-description">{{ description }}</p>
+  </div>
+
+  <div class="widget-content">
+    <!-- Main options -->
+    @for (option of widgetOptions; track option.id) {
+      <div class="widget-option">
+        <label class="option-label">
+          <input
+            type="radio"
+            [name]="'widget-option'"
+            [checked]="option.selected"
+            (change)="onOptionToggle(option.id)"
+            class="option-radio">
+          <span class="radio-custom"></span>
+          <span class="option-text">{{ option.label }}</span>
+        </label>
+      </div>
+    }
+
+    <!-- AI Data insights section -->
+    <div class="section-divider">
+      <h4 class="section-title">{{ sectionTitle }}</h4>
+      <p class="section-description">{{ sectionDescription }}</p>
+    </div>
+
+    <!-- Additional options -->
+    @for (option of additionalOptions; track option.id) {
+      <div class="widget-option">
+        <label class="option-label">
+          <input
+            type="checkbox"
+            [checked]="option.selected"
+            (change)="onOptionToggle(option.id)"
+            class="option-checkbox">
+          <span class="checkbox-custom"></span>
+          <span class="option-text">{{ option.label }}</span>
+        </label>
+      </div>
+    }
+  </div>
+</div>

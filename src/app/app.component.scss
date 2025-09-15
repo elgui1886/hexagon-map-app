@@ -331,10 +331,35 @@ app-map {
   z-index: 1001;
 }
 
+/* Time Timeline Container */
+.time-timeline-container {
+  position: absolute;
+  bottom: 15px; /* Position above the bottom, leaving space for zoom controls */
+  left: 50%;
+  transform: translateX(-50%); /* Center horizontally */
+  z-index: 1001;
+}
+
+/* Title Widget Container */
+.title-widget-container {
+  position: absolute;
+  top: 80px; /* Below the map toolbar */
+  right: var(--spacing-md);
+  z-index: 1000;
+}
+
+/* Legend Widget Container */
+.legend-widget-container {
+  position: absolute;
+  top: 380px; /* Below the title widget, adjust based on title widget height */
+  right: var(--spacing-md);
+  z-index: 1000;
+}
+
 .map-controls {
   position: absolute;
-  top: calc(var(--spacing-md) + 60px); /* Position below toolbar */
-  right: var(--spacing-md);
+  bottom: var(--spacing-md); /* Moved to bottom */
+  right: calc(var(--spacing-md) + 50px); /* Position to the left of zoom controls */
   background: rgba(255, 255, 255, 0.95);
   padding: var(--spacing-sm);
   border-radius: var(--border-radius);
