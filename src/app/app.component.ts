@@ -4,11 +4,12 @@ import { StateService } from './services/state.service';
 import { MapService } from './services/map.service';
 import { MapComponent } from './components/map/map.component';
 import { VehicleFilterComponent } from './components/vehicles/vehicle-filter.component';
+import { MapToolbarComponent } from './components/map-toolbar/map-toolbar.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, MapComponent, VehicleFilterComponent],
+  imports: [CommonModule, MapComponent, VehicleFilterComponent, MapToolbarComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -100,5 +101,32 @@ export class AppComponent {
 
   onDeselectAllVehicles(): void {
     console.log('All vehicles deselected from vehicle filter component');
+  }
+
+  onMapToolbarAction(action: string): void {
+    console.log('Map toolbar action:', action);
+    // Handle different toolbar actions
+    switch (action) {
+      case 'user':
+        console.log('User profile clicked');
+        break;
+      case 'triangle':
+        console.log('Triangle tool clicked');
+        break;
+      case 'layers':
+        console.log('Layers clicked');
+        break;
+      case 'diamond':
+        console.log('Diamond tool clicked');
+        break;
+      case 'chart':
+        console.log('Charts clicked');
+        break;
+      case 'fullscreen':
+        console.log('Fullscreen clicked');
+        break;
+      default:
+        console.log('Unknown action:', action);
+    }
   }
 }

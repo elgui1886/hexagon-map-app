@@ -1,0 +1,42 @@
+.map-toolbar {
+  display: flex;
+  gap: 16px; /* Increased spacing between buttons */
+  background: transparent;
+  padding: 12px; /* Increased padding around the toolbar */
+  border-radius: 8px;
+}
+
+.toolbar-btn {
+  width: 40px; /* Increased from 32px */
+  height: 40px; /* Increased from 32px */
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 50%; /* Made completely round */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    background: #f5f5f5;
+    border-color: #bbb;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.btn-icon {
+  font-size: 16px; /* Slightly larger icons */
+  color: #333;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -1,0 +1,11 @@
+<div class="map-toolbar">
+  @for (button of toolbarButtons; track button.id) {
+    <button
+      type="button"
+      class="toolbar-btn"
+      [title]="button.tooltip"
+      (click)="onButtonClick(button.id)">
+      <span class="btn-icon">{{ button.icon }}</span>
+    </button>
+  }
+</div>

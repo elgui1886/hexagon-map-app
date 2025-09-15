@@ -323,9 +323,17 @@ app-map {
   width: 100%;
 }
 
-.map-controls {
+/* Map Toolbar Container */
+.map-toolbar-container {
   position: absolute;
   top: var(--spacing-md);
+  right: var(--spacing-md);
+  z-index: 1001;
+}
+
+.map-controls {
+  position: absolute;
+  top: calc(var(--spacing-md) + 60px); /* Position below toolbar */
   right: var(--spacing-md);
   background: rgba(255, 255, 255, 0.95);
   padding: var(--spacing-sm);

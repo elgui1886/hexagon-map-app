@@ -71,6 +71,11 @@
           <div class="map-container">
             <app-map></app-map>
 
+            <!-- Map Toolbar - positioned in top-right -->
+            <div class="map-toolbar-container">
+              <app-map-toolbar (toolbarAction)="onMapToolbarAction($event)"></app-map-toolbar>
+            </div>
+
             <!-- Map controls overlay -->
             <div class="map-controls">
               <div class="zoom-info">
