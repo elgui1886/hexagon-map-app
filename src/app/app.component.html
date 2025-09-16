@@ -54,7 +54,10 @@
                   (change)="onResolutionChange(+$any($event.target).value)"
                 >
                   @for (option of resolutionOptions(); track option.value) {
-                  <option [value]="option.value">{{ option.label }}</option>
+                  <option
+                    [value]="option.value"
+                    [selected]="option.value === stateService.currentResolution()"
+                  >{{ option.label }}</option>
                   }
                 </select>
               </div>

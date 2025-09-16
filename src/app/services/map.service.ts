@@ -1,4 +1,4 @@
-import { Injectable, inject, effect, signal } from '@angular/core';
+import { Injectable, inject, effect, signal, untracked } from '@angular/core';
 import chroma from 'chroma-js';
 import L from 'leaflet';
 import * as h3 from 'h3-js';
@@ -8,13 +8,16 @@ import { StateService } from './state.service';
 // Fix for Leaflet default icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconRetinaUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class MapService {
   // Injected services
@@ -38,86 +41,7 @@ export class MapService {
 
   constructor() {
     // Set up effects to react to state changes
-    this.setupEffects();
-  }
-
-  private setupEffects(): void {
-    // React to h3Data changes
-    effect(() => {
-      const data = this.stateService.h3Data();
-      const isInitialized = this._isInitialized();
-      const dataSize = Object.keys(data).length;
-
-      console.log('H3Data effect triggered:', {
-        dataSize,
-        isInitialized
-      });
-
-      if (isInitialized) {
-        console.log('Rendering hexagons with', dataSize, 'hexagons');
-        this.renderHexagons(data);
-      } else {
-        console.log('Map not initialized yet, skipping render');
-      }
-    });
-
-    // React to mapViewState forceFit changes
-    effect(() => {
-      const state = this.stateService.mapViewState();
-      if (state.forceFit && this._isInitialized()) {
-        this.fitToHexagons();
-      }
-    }, { allowSignalWrites: true });
-
-    // React to filter changes
-    effect(() => {
-      const filters = this.stateService.filters();
-      const data = this.stateService.h3Data();
-      if (this._isInitialized()) {
-        this.renderHexagons(data);
-      }
-    });
-
-    // Auto-load data when map is first initialized
-    effect(() => {
-      const isInitialized = this._isInitialized();
-      const h3Data = this.stateService.h3Data();
-
-      if (isInitialized && Object.keys(h3Data).length === 0 && Object.keys(this.rawDataCache).length === 0) {
-        console.log('Map initialized - loading initial data');
-        this.loadSampleData();
-      }
-    });
-
-    // React to resolution changes - regenerate data from cache
-    effect(() => {
-      const currentResolution = this.stateService.currentResolution();
-      const isInitialized = this._isInitialized();
-      const cacheSize = Object.keys(this.rawDataCache).length;
-
-      console.log('Resolution effect triggered:', {
-        currentResolution,
-        isInitialized,
-        cacheSize,
-        hasCachedData: cacheSize > 0
-      });
-
-      if (isInitialized && cacheSize > 0) {
-        console.log('Conditions met - aggregating from cache...');
-        const startTime = performance.now();
-        const aggregatedData = this.aggregateDataToResolution(this.rawDataCache, currentResolution);
-        const endTime = performance.now();
-
-        console.log(`Aggregation completed in ${(endTime - startTime).toFixed(2)}ms`);
-        console.log('Updating H3 data with aggregated result...');
-        this.stateService.updateH3Data(aggregatedData);
-      } else {
-        console.log('Conditions not met for aggregation:', {
-          isInitialized,
-          cacheSize
-        });
-      }
-    });
+    this._setupEffects();
   }
 
   initMap(mapContainer: HTMLElement): void {
@@ -139,20 +63,22 @@ export class MapService {
         center: center as [number, number],
         zoom: zoom,
         zoomControl: false, // Disable default zoom control
-        attributionControl: true
+        attributionControl: true,
       });
 
       console.log('Map instance created:', this.map);
 
       // Add custom zoom control in bottom-right position
-      L.control.zoom({
-        position: 'bottomright'
-      }).addTo(this.map);
+      L.control
+        .zoom({
+          position: 'bottomright',
+        })
+        .addTo(this.map);
 
       // Add tile layer
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
-        maxZoom: 18
+        maxZoom: 18,
       }).addTo(this.map);
 
       console.log('Tile layer added');
@@ -161,11 +87,11 @@ export class MapService {
       this.hexagonLayer = L.layerGroup().addTo(this.map);
 
       // Set up event listeners
-      this.map.on('moveend', this.handleMapChange.bind(this));
-      this.map.on('zoomend', this.handleMapChange.bind(this));
+      this.map.on('moveend', this._handleMapChange.bind(this));
+      this.map.on('zoomend', this._handleMapChange.bind(this));
 
       // Initialize map state
-      this.updateMapState();
+      this._updateMapState();
       this._isInitialized.set(true);
 
       console.log('Map initialized successfully:', { center, zoom });
@@ -173,9 +99,112 @@ export class MapService {
       console.error('Error initializing map:', error);
     }
   }
+  // Load sample data for demonstration
+  loadSampleData(): void {
+    if (!(this.rawDataCache && Object.keys(this.rawDataCache).length > 0)) {
+      // Genera dati UNA SOLA VOLTA alla risoluzione massima (15)
+      const rawData: H3Data = {};
+      const centerLat = 40.7128;
+      const centerLng = -74.006;
+      const maxResolution = 10; // Risoluzione massima per massimo dettaglio
 
-  private handleMapChange(): void {
+      console.log('Loading raw data at max resolution:', maxResolution);
+
+      // Generate hexagons in a dense grid pattern around the center
+      for (let latOffset = -0.1; latOffset <= 0.1; latOffset += 0.005) {
+        for (let lngOffset = -0.1; lngOffset <= 0.1; lngOffset += 0.005) {
+          try {
+            const h3Index = h3.latLngToCell(
+              centerLat + latOffset,
+              centerLng + lngOffset,
+              maxResolution
+            );
+
+            // Initialize array if not exists
+            if (!rawData[h3Index]) {
+              rawData[h3Index] = [];
+            }
+
+            // Generate random sample data (fewer vehicles per small hexagon)
+            const vehicleCount = Math.floor(Math.random() * 3) + 1;
+            for (let i = 0; i < vehicleCount; i++) {
+              rawData[h3Index].push({
+                vehicle_id: `vehicle_${Math.floor(
+                  Math.random() * 1000
+                )}_${h3Index.slice(-4)}`,
+                kpis: {
+                  speed: Math.random() * 60,
+                  fuel: Math.random() * 100,
+                  distance: Math.random() * 500,
+                },
+              });
+            }
+          } catch (error) {
+            // Skip invalid coordinates
+          }
+        }
+      }
+
+      // Salva i dati grezzi nella cache
+      this.rawDataCache = rawData;
+    }
+
+    // Aggrega i dati alla risoluzione corrente e aggiorna lo stato
+    const currentResolution = this.stateService.currentResolution();
+    console.log('Aggregating initial data to resolution:', currentResolution);
+    const aggregatedData = this._aggregateDataToResolution(
+      this.rawDataCache,
+      currentResolution
+    );
+
+    this.stateService.updateH3Data(aggregatedData);
+  }
+  // Fit to data method
+  fitToData(): void {
+    this.stateService.updateMapViewState({ forceFit: true });
+  }
+  // Get map instance (for external access if needed)
+  getMap(): L.Map | null {
+    return this.map;
+  }
+  // Cleanup method
+  destroy(): void {
+    if (this.mapUpdateTimer) {
+      clearTimeout(this.mapUpdateTimer);
+    }
+
+    if (this.map) {
+      this.map.remove();
+    }
+
+    this._isInitialized.set(false);
+  }
+
+  private _handleMapChange(): void {
     if (!this.map) return;
+
+    // Log current zoom level
+    const currentZoom = this.map.getZoom();
+    console.log('Map change detected - Current zoom level:', currentZoom);
+
+    // Calculate optimal H3 resolution based on zoom level
+    const optimalH3Resolution = this._calculateOptimalH3Resolution(currentZoom);
+    const currentH3Resolution = this.stateService.currentResolution();
+
+    console.log('H3 Resolution analysis:', {
+      zoom: currentZoom,
+      currentH3Resolution,
+      optimalH3Resolution,
+      needsUpdate: optimalH3Resolution !== currentH3Resolution,
+    });
+
+    // Update H3 resolution if it should change
+    if (optimalH3Resolution !== currentH3Resolution) {
+      console.log(
+        `Updating H3 resolution: ${currentH3Resolution} → ${optimalH3Resolution}`
+      );
+      this.stateService.updateCurrentResolution(optimalH3Resolution);
+    }
 
     // Debounce map updates
     if (this.mapUpdateTimer) {
@@ -183,16 +212,64 @@ export class MapService {
     }
 
     this.mapUpdateTimer = window.setTimeout(() => {
-      this.updateMapState();
+      this._updateMapState();
     }, this.MAP_UPDATE_DEBOUNCE);
   }
+  /**
+   * Calculate optimal H3 resolution based on map zoom level
+   * Higher zoom = higher H3 resolution (smaller hexagons)
+   *
+   * Mapping strategy:
+   * - Zoom > 16: H3 res 10 (~65m hexagons) - Street level
+   * - Zoom 13-16: H3 res 9 (~174m hexagons) - Block level
+   * - Zoom 10-12: H3 res 8 (~461m hexagons) - Neighborhood
+   * - Zoom 7-9: H3 res 7 (~1.22km hexagons) - District
+   * - Zoom < 7: H3 res 6 (~3.23km hexagons) - City level
+   */
+  private _calculateOptimalH3Resolution(zoomLevel: number): number {
+    let resolution: number;
+    let description: string;
 
-  private updateMapState(): void {
+    if (zoomLevel > 16) {
+      resolution = 10;
+      description = 'Street level (~65m)';
+    } else if (zoomLevel >= 13) {
+      resolution = 9;
+      description = 'Block level (~174m)';
+    } else if (zoomLevel >= 10) {
+      resolution = 8;
+      description = 'Neighborhood (~461m)';
+    } else if (zoomLevel >= 7) {
+      resolution = 7;
+      description = 'District (~1.22km)';
+    } else {
+      resolution = 6;
+      description = 'City level (~3.23km)';
+    }
+
+    console.log(
+      `Zoom ${zoomLevel.toFixed(
+        1
+      )} → H3 resolution ${resolution} (${description})`
+    );
+    return resolution;
+  }
+  private _updateMapState(): void {
     if (!this.map) return;
 
     const center = this.map.getCenter();
     const zoom = this.map.getZoom();
     const bounds = this.map.getBounds();
+
+    console.log('Map state update:', {
+      zoom: zoom,
+      zoomRange: `${this.map.getMinZoom()} - ${this.map.getMaxZoom()}`,
+      center: [center.lat.toFixed(4), center.lng.toFixed(4)],
+      boundsSize: {
+        latSpan: (bounds.getNorth() - bounds.getSouth()).toFixed(4),
+        lngSpan: (bounds.getEast() - bounds.getWest()).toFixed(4),
+      },
+    });
 
     const newState: MapViewState = {
       center: [center.lat, center.lng],
@@ -201,15 +278,13 @@ export class MapService {
         north: bounds.getNorth(),
         south: bounds.getSouth(),
         east: bounds.getEast(),
-        west: bounds.getWest()
-      }
+        west: bounds.getWest(),
+      },
     };
 
     this.stateService.setMapViewState(newState);
-    console.log('Map state updated:', newState);
   }
-
-  private renderHexagons(data: H3Data): void {
+  private _renderHexagons(data: H3Data): void {
     if (!this.map || !this.hexagonLayer) return;
 
     console.log('Rendering hexagons:', Object.keys(data).length);
@@ -218,8 +293,12 @@ export class MapService {
     const hexagons = Object.keys(data);
 
     // Only fit bounds on very first data load
-    if (!this.initialDataLoaded && hexagons.length > 0 && !this.stateService.mapViewState()?.bounds) {
-      this.fitToHexagons();
+    if (
+      !this.initialDataLoaded &&
+      hexagons.length > 0 &&
+      !this.stateService.mapViewState()?.bounds
+    ) {
+      this._fitToHexagons();
       this.initialDataLoaded = true;
     }
 
@@ -260,7 +339,8 @@ export class MapService {
     console.log('Value distribution:', { q1, q2, q3 });
 
     // Create color scale with better distribution
-    const scale = chroma.scale(['#00b300', '#ffd700', '#ff0000', '#8b0000'])
+    const scale = chroma
+      .scale(['#00b300', '#ffd700', '#ff0000', '#8b0000'])
       .mode('lch')
       .domain([min, min + (max - min) * 0.25, min + (max - min) * 0.5, max]);
 
@@ -269,7 +349,9 @@ export class MapService {
       try {
         // Convert H3 index to polygon coordinates
         const hexBoundary = h3.cellToBoundary(h3Index);
-        const coords = hexBoundary.map(([lat, lng]) => [lat, lng] as [number, number]);
+        const coords = hexBoundary.map(
+          ([lat, lng]) => [lat, lng] as [number, number]
+        );
 
         // Calculate color based on KPI values
         let total = entries.reduce((sum, entry) => {
@@ -286,14 +368,18 @@ export class MapService {
           color: scale(total).hex(),
           weight: 1,
           opacity: 0.8,
-          fillOpacity: 0.35
+          fillOpacity: 0.35,
         });
 
         // Add popup with data
         polygon.bindPopup(`
           <strong>H3 Index:</strong> ${h3Index}<br>
-          <strong>Vehicles:</strong> ${Array.from(new Set(entries.map(e => e.vehicle_id))).length}<br>
-          <strong>${currentFilters.aggregation === 'sum' ? 'Sum' : 'Average'} of ${currentFilters.kpi}:</strong> ${total.toFixed(2)}
+          <strong>Vehicles:</strong> ${
+            Array.from(new Set(entries.map((e) => e.vehicle_id))).length
+          }<br>
+          <strong>${
+            currentFilters.aggregation === 'sum' ? 'Sum' : 'Average'
+          } of ${currentFilters.kpi}:</strong> ${total.toFixed(2)}
         `);
 
         this.hexagonLayer!.addLayer(polygon);
@@ -302,8 +388,10 @@ export class MapService {
       }
     }
   }
-
-  private fitToHexagons(): void {
+  /**
+   * Fit map view to current hexagon bounds
+   */
+  private _fitToHexagons(): void {
     if (!this.map) return;
 
     const data = this.stateService.h3Data();
@@ -311,9 +399,12 @@ export class MapService {
 
     if (hexagons.length === 0) return;
 
-    let minLat = 90, maxLat = -90, minLng = 180, maxLng = -180;
+    let minLat = 90,
+      maxLat = -90,
+      minLng = 180,
+      maxLng = -180;
 
-    hexagons.forEach(h3Index => {
+    hexagons.forEach((h3Index) => {
       try {
         const boundary = h3.cellToBoundary(h3Index);
         boundary.forEach(([lat, lng]) => {
@@ -328,71 +419,29 @@ export class MapService {
     });
 
     // Fit map to hexagon bounds
-    this.map.fitBounds([
-      [minLat, minLng],
-      [maxLat, maxLng]
-    ], { padding: [50, 50] });
+    this.map.fitBounds(
+      [
+        [minLat, minLng],
+        [maxLat, maxLng],
+      ],
+      { padding: [50, 50] }
+    );
 
     // Reset forceFit flag
     this.stateService.updateMapViewState({ forceFit: false });
   }
-
-  // Load sample data for demonstration
-  loadSampleData(): void {
-    // Genera dati UNA SOLA VOLTA alla risoluzione massima (15)
-    const rawData: H3Data = {};
-    const centerLat = 40.7128;
-    const centerLng = -74.006;
-    const maxResolution = 15; // Risoluzione massima per massimo dettaglio
-
-    console.log('Loading raw data at max resolution:', maxResolution);
-
-    // Generate hexagons in a dense grid pattern around the center
-    for (let latOffset = -0.1; latOffset <= 0.1; latOffset += 0.005) {
-      for (let lngOffset = -0.1; lngOffset <= 0.1; lngOffset += 0.005) {
-        try {
-          const h3Index = h3.latLngToCell(centerLat + latOffset, centerLng + lngOffset, maxResolution);
-
-          // Initialize array if not exists
-          if (!rawData[h3Index]) {
-            rawData[h3Index] = [];
-          }
-
-          // Generate random sample data (fewer vehicles per small hexagon)
-          const vehicleCount = Math.floor(Math.random() * 3) + 1;
-          for (let i = 0; i < vehicleCount; i++) {
-            rawData[h3Index].push({
-              vehicle_id: `vehicle_${Math.floor(Math.random() * 1000)}_${h3Index.slice(-4)}`,
-              kpis: {
-                speed: Math.random() * 60,
-                fuel: Math.random() * 100,
-                distance: Math.random() * 500
-              }
-            });
-          }
-        } catch (error) {
-          // Skip invalid coordinates
-        }
-      }
-    }
-
-    // Salva i dati grezzi nella cache
-    this.rawDataCache = rawData;
-    console.log('Raw data cached:', Object.keys(rawData).length, 'hexagons at resolution', maxResolution);
-
-    // Aggrega i dati alla risoluzione corrente e aggiorna lo stato
-    const currentResolution = this.stateService.currentResolution();
-    console.log('Aggregating initial data to resolution:', currentResolution);
-    const aggregatedData = this.aggregateDataToResolution(rawData, currentResolution);
-
-    this.stateService.updateH3Data(aggregatedData);
-  }
-
   // Aggregate H3 data from high resolution to target resolution
-  private aggregateDataToResolution(rawData: H3Data, targetResolution: number): H3Data {
+  private _aggregateDataToResolution(
+    rawData: H3Data,
+    targetResolution: number
+  ): H3Data {
     const aggregatedData: H3Data = {};
 
-    console.log(`Aggregating from resolution ${h3.getResolution(Object.keys(rawData)[0])} to ${targetResolution}`);
+    console.log(
+      `Aggregating from resolution ${h3.getResolution(
+        Object.keys(rawData)[0]
+      )} to ${targetResolution}`
+    );
 
     for (const [h3Index, entries] of Object.entries(rawData)) {
       try {
@@ -412,7 +461,9 @@ export class MapService {
           // Non possiamo disaggregare (large to small) senza dati più dettagliati
           // Manteniamo l'esagono corrente
           targetIndex = h3Index;
-          console.warn(`Cannot disaggregate from resolution ${currentResolution} to ${targetResolution} for hexagon ${h3Index}`);
+          console.warn(
+            `Cannot disaggregate from resolution ${currentResolution} to ${targetResolution} for hexagon ${h3Index}`
+          );
         }
 
         // Initialize array if not exists
@@ -422,7 +473,6 @@ export class MapService {
 
         // Add all entries to the target hexagon
         aggregatedData[targetIndex].push(...entries);
-
       } catch (error) {
         console.error('Error aggregating hexagon:', h3Index, error);
         // Keep original if aggregation fails
@@ -435,31 +485,55 @@ export class MapService {
 
     const originalCount = Object.keys(rawData).length;
     const aggregatedCount = Object.keys(aggregatedData).length;
-    console.log(`Aggregation complete: ${originalCount} → ${aggregatedCount} hexagons`);
+    console.log(
+      `Aggregation complete: ${originalCount} → ${aggregatedCount} hexagons`
+    );
 
     return aggregatedData;
   }
+    private _setupEffects(): void {
+    // React to h3Data changes or filters changes
+    effect(() => {
+      const data = this.stateService.h3Data();
+      const isInitialized = untracked(this._isInitialized);
+      const filters = this.stateService.filters();
 
-  // Fit to data method
-  fitToData(): void {
-    this.stateService.updateMapViewState({ forceFit: true });
-  }
+      if (isInitialized) {
+        this._renderHexagons(data);
+      } else {
+        console.log('Map not initialized yet, skipping render');
+      }
+    });
 
-  // Get map instance (for external access if needed)
-  getMap(): L.Map | null {
-    return this.map;
-  }
+    // React to mapViewState forceFit changes
+    effect(
+      () => {
+        const state = this.stateService.mapViewState();
+        const isInitialized = untracked(this._isInitialized);
+        if (state.forceFit && isInitialized) {
+          this._fitToHexagons();
+        }
+      },
+      { allowSignalWrites: true }
+    );
 
-  // Cleanup method
-  destroy(): void {
-    if (this.mapUpdateTimer) {
-      clearTimeout(this.mapUpdateTimer);
-    }
+    // React to resolution changes - regenerate data from cache
+    effect(
+      () => {
+        const currentResolution = this.stateService.currentResolution();
+        const isInitialized = untracked(this._isInitialized);
+        const cacheSize = Object.keys(this.rawDataCache).length;
 
-    if (this.map) {
-      this.map.remove();
-    }
-
-    this._isInitialized.set(false);
+        if (isInitialized && cacheSize > 0) {
+          const startTime = performance.now();
+          const aggregatedData = this._aggregateDataToResolution(
+            this.rawDataCache,
+            currentResolution
+          );
+          this.stateService.updateH3Data(aggregatedData);
+        }
+      },
+      { allowSignalWrites: true }
+    );
   }
 }

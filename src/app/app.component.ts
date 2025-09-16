@@ -69,6 +69,10 @@ export class AppComponent {
     this.stateService.hexagonCount()
   );
 
+  readonly currentResolution = computed(() => 
+    this.stateService.currentResolution()
+  );
+
   readonly allVehiclesSelected = computed(() =>
     this.vehicles().every(v => v.selected)
   );
