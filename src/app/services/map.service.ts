@@ -40,19 +40,18 @@ export class MapService {
   readonly isInitialized = this._isInitialized.asReadonly();
 
   constructor() {
-    // Set up effects to react to state changes
     this._setupEffects();
   }
 
+  /**
+   * Initialize the Leaflet map with the given HTML container
+   * @param mapContainer - The HTML element to render the map in
+   */
   initMap(mapContainer: HTMLElement): void {
     if (!mapContainer || this._isInitialized()) {
-      console.log('Map container not available or already initialized');
       return;
     }
 
-    console.log('Initializing map with container:', mapContainer);
-
-    // Get initial config from state service
     const config = this.stateService.appConfig();
     const center = config.default_map_center;
     const zoom = config.default_map_zoom;
@@ -65,8 +64,6 @@ export class MapService {
         zoomControl: false, // Disable default zoom control
         attributionControl: true,
       });
-
-      console.log('Map instance created:', this.map);
 
       // Add custom zoom control in bottom-right position
       L.control
@@ -81,34 +78,32 @@ export class MapService {
         maxZoom: 18,
       }).addTo(this.map);
 
-      console.log('Tile layer added');
-
       // Create hexagon layer
       this.hexagonLayer = L.layerGroup().addTo(this.map);
 
       // Set up event listeners
-      this.map.on('moveend', this._handleMapChange.bind(this));
-      this.map.on('zoomend', this._handleMapChange.bind(this));
+      this.map.on('moveend', this._handleMapMove.bind(this));
+      this.map.on('zoomend', this._handleMapZoom.bind(this));
 
       // Initialize map state
       this._updateMapState();
       this._isInitialized.set(true);
-
-      console.log('Map initialized successfully:', { center, zoom });
     } catch (error) {
-      console.error('Error initializing map:', error);
+      // Silent error handling
     }
   }
-  // Load sample data for demonstration
+
+  /**
+   * Load sample H3 data for demonstration purposes
+   * Generates data at maximum resolution and caches it for aggregation
+   */
   loadSampleData(): void {
     if (!(this.rawDataCache && Object.keys(this.rawDataCache).length > 0)) {
       // Genera dati UNA SOLA VOLTA alla risoluzione massima (15)
       const rawData: H3Data = {};
       const centerLat = 40.7128;
       const centerLng = -74.006;
-      const maxResolution = 10; // Risoluzione massima per massimo dettaglio
-
-      console.log('Loading raw data at max resolution:', maxResolution);
+      const maxResolution = 10;
 
       // Generate hexagons in a dense grid pattern around the center
       for (let latOffset = -0.1; latOffset <= 0.1; latOffset += 0.005) {
@@ -145,13 +140,12 @@ export class MapService {
         }
       }
 
-      // Salva i dati grezzi nella cache
+      // Cache raw data
       this.rawDataCache = rawData;
     }
 
-    // Aggrega i dati alla risoluzione corrente e aggiorna lo stato
+    // Aggregate data to current resolution and update state
     const currentResolution = this.stateService.currentResolution();
-    console.log('Aggregating initial data to resolution:', currentResolution);
     const aggregatedData = this._aggregateDataToResolution(
       this.rawDataCache,
       currentResolution
@@ -159,15 +153,25 @@ export class MapService {
 
     this.stateService.updateH3Data(aggregatedData);
   }
-  // Fit to data method
+
+  /**
+   * Fit map view to show all hexagon data
+   */
   fitToData(): void {
     this.stateService.updateMapViewState({ forceFit: true });
   }
-  // Get map instance (for external access if needed)
+
+  /**
+   * Get the Leaflet map instance
+   * @returns The map instance or null if not initialized
+   */
   getMap(): L.Map | null {
     return this.map;
   }
-  // Cleanup method
+
+  /**
+   * Clean up map resources and timers
+   */
   destroy(): void {
     if (this.mapUpdateTimer) {
       clearTimeout(this.mapUpdateTimer);
@@ -180,33 +184,38 @@ export class MapService {
     this._isInitialized.set(false);
   }
 
-  private _handleMapChange(): void {
+  /**
+   * Handle map move events (pan) - only update map state
+   */
+  private _handleMapMove(): void {
     if (!this.map) return;
 
-    // Log current zoom level
-    const currentZoom = this.map.getZoom();
-    console.log('Map change detected - Current zoom level:', currentZoom);
+    // Debounce map state updates
+    if (this.mapUpdateTimer) {
+      clearTimeout(this.mapUpdateTimer);
+    }
 
-    // Calculate optimal H3 resolution based on zoom level
+    this.mapUpdateTimer = window.setTimeout(() => {
+      this._updateMapState();
+    }, this.MAP_UPDATE_DEBOUNCE);
+  }
+
+  /**
+   * Handle map zoom events - update map state and H3 resolution
+   */
+  private _handleMapZoom(): void {
+    if (!this.map) return;
+
+    const currentZoom = this.map.getZoom();
     const optimalH3Resolution = this._calculateOptimalH3Resolution(currentZoom);
     const currentH3Resolution = this.stateService.currentResolution();
 
-    console.log('H3 Resolution analysis:', {
-      zoom: currentZoom,
-      currentH3Resolution,
-      optimalH3Resolution,
-      needsUpdate: optimalH3Resolution !== currentH3Resolution,
-    });
-
     // Update H3 resolution if it should change
     if (optimalH3Resolution !== currentH3Resolution) {
-      console.log(
-        `Updating H3 resolution: ${currentH3Resolution} → ${optimalH3Resolution}`
-      );
       this.stateService.updateCurrentResolution(optimalH3Resolution);
     }
 
-    // Debounce map updates
+    // Also update map state (debounced)
     if (this.mapUpdateTimer) {
       clearTimeout(this.mapUpdateTimer);
     }
@@ -247,29 +256,19 @@ export class MapService {
       description = 'City level (~3.23km)';
     }
 
-    console.log(
-      `Zoom ${zoomLevel.toFixed(
-        1
-      )} → H3 resolution ${resolution} (${description})`
-    );
     return resolution;
   }
+
+  /**
+   * Update the internal map state (center, zoom, bounds) in the state service
+   * @private
+   */
   private _updateMapState(): void {
     if (!this.map) return;
 
     const center = this.map.getCenter();
     const zoom = this.map.getZoom();
     const bounds = this.map.getBounds();
-
-    console.log('Map state update:', {
-      zoom: zoom,
-      zoomRange: `${this.map.getMinZoom()} - ${this.map.getMaxZoom()}`,
-      center: [center.lat.toFixed(4), center.lng.toFixed(4)],
-      boundsSize: {
-        latSpan: (bounds.getNorth() - bounds.getSouth()).toFixed(4),
-        lngSpan: (bounds.getEast() - bounds.getWest()).toFixed(4),
-      },
-    });
 
     const newState: MapViewState = {
       center: [center.lat, center.lng],
@@ -284,12 +283,16 @@ export class MapService {
 
     this.stateService.setMapViewState(newState);
   }
+
+  /**
+   * Render H3 hexagons on the map with color-coded visualization
+   * @param data - H3 data to render
+   * @private
+   */
   private _renderHexagons(data: H3Data): void {
     if (!this.map || !this.hexagonLayer) return;
 
-    console.log('Rendering hexagons:', Object.keys(data).length);
     this.hexagonLayer.clearLayers();
-
     const hexagons = Object.keys(data);
 
     // Only fit bounds on very first data load
@@ -329,14 +332,12 @@ export class MapService {
     // Create color scale based on data range
     const min = Math.min(...values);
     const max = Math.max(...values);
-    console.log('Value range:', { min, max, totalValues: values.length });
 
-    // Log distribution in quartiles
+    // Calculate distribution in quartiles for color mapping
     const sortedValues = [...values].sort((a, b) => a - b);
     const q1 = sortedValues[Math.floor(sortedValues.length * 0.25)];
     const q2 = sortedValues[Math.floor(sortedValues.length * 0.5)];
     const q3 = sortedValues[Math.floor(sortedValues.length * 0.75)];
-    console.log('Value distribution:', { q1, q2, q3 });
 
     // Create color scale with better distribution
     const scale = chroma
@@ -391,6 +392,10 @@ export class MapService {
   /**
    * Fit map view to current hexagon bounds
    */
+  /**
+   * Fit map view to current hexagon bounds with padding
+   * @private
+   */
   private _fitToHexagons(): void {
     if (!this.map) return;
 
@@ -430,18 +435,19 @@ export class MapService {
     // Reset forceFit flag
     this.stateService.updateMapViewState({ forceFit: false });
   }
-  // Aggregate H3 data from high resolution to target resolution
+
+  /**
+   * Aggregate H3 data from high resolution to target resolution
+   * @param rawData - Source H3 data at higher resolution
+   * @param targetResolution - Target H3 resolution level (0-15)
+   * @returns Aggregated H3 data at target resolution
+   * @private
+   */
   private _aggregateDataToResolution(
     rawData: H3Data,
     targetResolution: number
   ): H3Data {
     const aggregatedData: H3Data = {};
-
-    console.log(
-      `Aggregating from resolution ${h3.getResolution(
-        Object.keys(rawData)[0]
-      )} to ${targetResolution}`
-    );
 
     for (const [h3Index, entries] of Object.entries(rawData)) {
       try {
@@ -485,13 +491,15 @@ export class MapService {
 
     const originalCount = Object.keys(rawData).length;
     const aggregatedCount = Object.keys(aggregatedData).length;
-    console.log(
-      `Aggregation complete: ${originalCount} → ${aggregatedCount} hexagons`
-    );
 
     return aggregatedData;
   }
-    private _setupEffects(): void {
+
+  /**
+   * Set up Angular effects to react to state changes
+   * @private
+   */
+  private _setupEffects(): void {
     // React to h3Data changes or filters changes
     effect(() => {
       const data = this.stateService.h3Data();
@@ -500,8 +508,6 @@ export class MapService {
 
       if (isInitialized) {
         this._renderHexagons(data);
-      } else {
-        console.log('Map not initialized yet, skipping render');
       }
     });
 
